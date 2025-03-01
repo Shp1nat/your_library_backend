@@ -1,5 +1,5 @@
 const {DataTypes} = require('sequelize');
-const crypto = require("crypto-js");
+const bcrypt = require('bcrypt');
 
 module.exports.step = 1;
 
@@ -15,17 +15,21 @@ module.exports.createModel = (inParams) => {
     const User = sequelize.define('User', {
         login: {
             type: DataTypes.STRING,
-            allowNull: false
+            allowNull: false,
+            unique: true
         },
         password: {
             type: DataTypes.STRING,
             allowNull: false,
-            set (value) {
-                this.setDataValue('password', crypto.SHA256(value).toString());
+            set(value) {
+                const salt = bcrypt.genSaltSync(10);
+                const hash = bcrypt.hashSync(value, salt);
+                this.setDataValue('password', hash);
             }
         },
         email: {
-            type: DataTypes.STRING
+            type: DataTypes.STRING,
+            unique: true,
         },
         name: {
             type: DataTypes.STRING
@@ -38,9 +42,6 @@ module.exports.createModel = (inParams) => {
         },
         age: {
             type: DataTypes.INTEGER
-        },
-        address: {
-            type: DataTypes.STRING
         },
         status: {
             type: DataTypes.STRING,
