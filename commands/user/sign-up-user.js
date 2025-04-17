@@ -22,6 +22,7 @@ module.exports = (app, model) => {
             if (error.name === 'SequelizeUniqueConstraintError') {
                 return res.status(400).json({ error: 'User with this login or email already exists' });
             }
+
             res.status(500).json({ error: error.message });
         }
     };
