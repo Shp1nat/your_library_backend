@@ -24,11 +24,11 @@ module.exports.createModel = (inParams) => {
 
     const {Example, User} = model;
 
-    Example.hasMany(Order, {foreignKey: 'exampleId'});
-    Order.belongsTo(Example, {foreignKey: 'exampleId'});
+    Example.hasMany(Order, { as: 'orders', foreignKey: 'exampleId' });
+    Order.belongsTo(Example, { as: 'example', foreignKey: 'exampleId'});
 
-    User.hasMany(Order, {foreignKey: 'userId'});
-    Order.belongsTo(User, {foreignKey: 'userId'});
+    User.hasMany(Order, { as: 'orders', foreignKey: 'userId'});
+    Order.belongsTo(User, { as: 'user', foreignKey: 'userId'});
 
     return {
         Order

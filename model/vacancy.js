@@ -26,8 +26,8 @@ module.exports.createModel = (inParams) => {
 
     const {User} = model;
 
-    User.hasMany(Vacancy, {foreignKey: 'userId'});
-    Vacancy.belongsTo(User, {foreignKey: 'userId'});
+    User.hasMany(Vacancy, {as: 'vacancies', foreignKey: 'userId'});
+    Vacancy.belongsTo(User, {as: 'user', foreignKey: 'userId'});
 
 
     return {

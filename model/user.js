@@ -52,8 +52,6 @@ module.exports.createModel = (inParams) => {
         paranoid: true
     });
 
-    const {Address} = model;
-
     return {
         User
     };

@@ -12,14 +12,25 @@ module.exports.createModel = (inParams) => {
     const sequelize = connection.sequelize;
 
     const Example = sequelize.define('Example', {
+        name: {
+            type: DataTypes.STRING
+        },
         description: {
-            type: DataTypes.TEXT,
+            type: DataTypes.TEXT
         },
         year: {
-            type: DataTypes.INTEGER
+            type: DataTypes.INTEGER,
+            allowNull: false
         },
-        count: {
-            type: DataTypes.INTEGER
+        availableCount: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            defaultValue: 0
+        },
+        digitalVersion: {
+            type: DataTypes.BOOLEAN,
+            allowNull: false,
+            defaultValue: false
         }
     }, {
         paranoid: true
@@ -27,11 +38,11 @@ module.exports.createModel = (inParams) => {
 
     const {Publisher, Book} = model;
 
-    Publisher.hasMany(Example, {foreignKey: 'publisherId'});
-    Example.belongsTo(Publisher, {foreignKey: 'publisherId'});
+    Publisher.hasMany(Example, { as: 'examples', foreignKey: 'publisherId' });
+    Example.belongsTo(Publisher, { as: 'publisher', foreignKey: 'publisherId' });
 
-    Book.hasMany(Example, {foreignKey: 'bookId'});
-    Example.belongsTo(Book, {foreignKey: 'bookId'});
+    Book.hasMany(Example, {as: 'examples', foreignKey: 'bookId'});
+    Example.belongsTo(Book, { as: 'book', foreignKey: 'bookId' });
 
     return {
         Example
