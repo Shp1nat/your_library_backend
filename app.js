@@ -81,12 +81,11 @@ class Application {
         //todo simplify
         const commands = ['address', 'author', 'book', 'city', 'example', 'genre', 'publisher', 'street', 'type'];
         for (const command of commands) {
-            const setterRef = require(`./commands/${command}/set-${command}`);
-            const getterIdsRef = require(`./commands/${command}/get-${command}-ids`);
-            const getterIdsOutRef = require(`./commands/${command}/get-${command}-ids-out`);
-            this.express.post(setterRef.url, (new setterRef(this)).execute);
-            this.express.post(getterIdsRef.url, (new getterIdsRef(this)).execute);
-            this.express.post(getterIdsOutRef.url, (new getterIdsOutRef(this)).execute);
+            const handlers = [`set-${command}`, `get-${command}-ids`, `get-${command}-ids-out`, `remove-${command}`];
+            for (const handler of handlers) {
+                const ref = require(`./commands/${command}/${handler}`);
+                this.express.post(ref.url, (new ref(this)).execute);
+            }
         }
     }
 
