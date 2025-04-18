@@ -2,6 +2,7 @@ const async = require('async');
 const model = require('./model');
 const Connection = require('./connection');
 const express = require('express');
+const cors = require('cors');
 const fsp = require('fs/promises');
 const path  = require('path');
 const {commandsPath, builtInAddressPath} = require('./depends.js');
@@ -12,6 +13,10 @@ class Application {
     constructor () {
         this.express = express();
         this.express.use(express.json());
+        this.express.use(cors({
+            origin: 'http://localhost:8080',
+            credentials: true
+        }));
     }
 
     prepare (inParams, onDone) {
@@ -64,17 +69,24 @@ class Application {
     }
 
     initRoutes (inParams, onDone) {
-        const signUpUser = require('./commands/user/sign-up-user')(this.express, this.model);
-        const getUserInfo = require('./commands/user/get-user-info')(this.express, this.model);
-        const signInUser = require('./commands/user/sign-in-user')(this.express, this.model);
-        const refreshTokenRoute = require('./commands/user/refresh-token')(this.express, this.model);
-        this.express.post('/users/refresh-token', refreshTokenRoute);
-        this.express.post('/users/login', signInUser);
-        this.express.post('/users/register', signUpUser);
-        this.express.get('/users/me', authMiddleware, getUserInfo);
+        this.initUserRoutes();
         this.initSimpleRoutes();
 
         return onDone();
+    }
+
+    initUserRoutes () {
+        //todo simplify
+        const getUserInfo = require('./commands/user/get-user-info')(this.express, this.model);
+        const refreshTokenRoute = require('./commands/user/refresh-token')(this.express, this.model);
+        this.express.post('/users/refresh-token', refreshTokenRoute);
+        this.express.get('/users/me', authMiddleware, getUserInfo);
+
+        const handlers = ['sign-up-user', 'sign-in-user'];
+        for (const handler of handlers) {
+            const ref = require(`./commands/user/${handler}`);
+            this.express.post(ref.url, (new ref(this)).execute);
+        }
     }
 
     initSimpleRoutes () {

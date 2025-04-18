@@ -2,28 +2,107 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 
-module.exports = (app, model) => {
-    return async (req, res) => {
+class SignInUser {
+    constructor(app) {
+        this.app = app;
+        this.model = app?.model;
+        this.sequelize = app?.connection?.sequelize;
+        this.execute = this.execute.bind(this);
+    }
+
+    async getUser (login, transaction) {
+        return await this.model.User.findOne({
+            attributes: ['id', 'login', 'password'],
+            where: { login: login },
+            transaction: transaction
+        });
+    }
+
+    static get url () {
+        return '/proxy/sign-in-user.json';
+    }
+
+    get formatErrorMessage() {
+        return 'Неверный формат ввода';
+    }
+
+    get enterErrorMessage() {
+        return 'Ошибка входа пользователя';
+    }
+
+    get loginErrorMessage() {
+        return 'Пользователя с таким логином не существует';
+    }
+
+    get passwordErrorMessage() {
+        return 'Неверный пароль';
+    }
+
+    get emptyFieldsErrorMessage() {
+        return 'Поля логина и пароля не могут быть пустыми';
+    }
+
+    async validate (inData) {
+        if (!inData || !inData.user)
+            throw new Error(this.formatErrorMessage);
+
+        if (!inData.user.login || !inData.user.password)
+            throw new Error(this.emptyFieldsErrorMessage);
+
+        const user = await this.getUser(inData.user.login, inData.transaction);
+
+        if (!user)
+            throw new Error(this.loginErrorMessage);
+
+        const passwordMatch = await bcrypt.compare(inData.user.password, user.password);
+
+        if (!passwordMatch)
+            throw new Error(this.passwordErrorMessage);
+    }
+
+    async getResult (inData) {
+        const user = await this.getUser(inData.user.login, inData.transaction);
+
+        const accessToken = jwt.sign({ userId: user.id }, 'your-access-secret-key', { expiresIn: '60m' }); // 60 минут
+        const refreshToken = jwt.sign({ userId: user.id, random: crypto.randomBytes(64).toString('hex') }, 'your-refresh-secret-key', { expiresIn: '7d' }); // 7 дней
+
+        return Object.assign({id: user.id}, { accessToken, refreshToken });
+    }
+
+    async signIn (inData) {
+        await this.validate(inData);
+        const result = await this.getResult(inData);
+        return result;
+    }
+
+    async execute (inData) {
+        const transactionFromParent = !!inData.transaction;
+        const transaction = transactionFromParent ? inData.transaction : await this.sequelize.transaction();
+        inData.transaction = transaction;
+        let status;
+        let response;
         try {
-            const { login, password } = req.body;
-            const user = await model.User.findOne({ where: { login } });
-
-            if (!user) {
-                return res.status(401).json({ error: 'Invalid login or password' });
+            const result = await this.signIn(Object.assign(inData.body, { transaction: inData.transaction }));
+            if (result && result.result === false) {
+                if (!transactionFromParent)
+                    await transaction.rollback();
+                status = 400;
+            } else {
+                if (!transactionFromParent)
+                    await transaction.commit();
+                status = 201;
             }
-
-            const passwordMatch = await bcrypt.compare(password, user.password);
-
-            if (!passwordMatch) {
-                return res.status(401).json({ error: 'Invalid login or password' });
-            }
-
-            const accessToken = jwt.sign({ userId: user.id }, 'your-access-secret-key', { expiresIn: '60m' }); // 15 минут
-            const refreshToken = jwt.sign({ userId: user.id, random: crypto.randomBytes(64).toString('hex') }, 'your-refresh-secret-key', { expiresIn: '7d' }); // 7 дней
-
-            res.json({ accessToken, refreshToken });
+            response = { result: result };
         } catch (error) {
-            res.status(500).json({ error: error.message });
+            console.log(error);
+            if (!transactionFromParent)
+                await transaction.rollback();
+            status = 400;
+            response = { error: error.message };
         }
-    };
-};
+        inData.res.status(status).json(response);
+    }
+
+}
+
+module.exports = SignInUser;
