@@ -13,7 +13,7 @@ class RemoveExample extends BaseRemover {
         return 'Наборы экземпляров с данными id не были найдены';
     }
 
-    async validate(inData) {
+    async validate (inData) {
         if (!inData?.example)
             throw new Error(this.formatErrorMessage);
         if (!inData.example.id || (Array.isArray(inData.example.id) && inData.example.id.length === 0))

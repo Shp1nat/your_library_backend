@@ -9,7 +9,7 @@ class SetAuthor extends BaseSetter {
         return 'Автор с такими именем и фамилией уже существует';
     }
 
-    async validate(inData) {
+    async validate (inData) {
         if (!inData?.author || !inData.author.name || !inData.author.lastname)
             throw new Error(this.formatErrorMessage);
 

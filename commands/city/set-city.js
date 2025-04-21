@@ -9,7 +9,7 @@ class SetCity extends BaseSetter {
         return 'Город с данным названием уже существует';
     }
 
-    async validate(inData) {
+    async validate (inData) {
         if (!inData?.city || !inData.city.name)
             throw new Error(this.formatErrorMessage);
 

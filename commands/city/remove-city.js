@@ -13,7 +13,7 @@ class RemoveCity extends BaseRemover {
         return 'Наборы городов с данными id не были найдены';
     }
 
-    async validate(inData) {
+    async validate (inData) {
         if (!inData?.city)
             throw new Error(this.formatErrorMessage);
         if (!inData.city.id || (Array.isArray(inData.city.id) && inData.city.id.length === 0))

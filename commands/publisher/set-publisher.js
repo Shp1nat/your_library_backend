@@ -9,7 +9,7 @@ class SetPublisher extends BaseSetter {
         return 'Издательство с данным названием с данным набором адресов уже существует';
     }
 
-    async validate(inData) {
+    async validate (inData) {
         if (!inData?.publisher || !inData.publisher.name || !inData.publisher.addresses)
             throw new Error(this.formatErrorMessage);
 

@@ -5,7 +5,7 @@ class SetAddress extends BaseSetter {
         return '/proxy/set-address.json';
     }
 
-    async validate(inData) {
+    async validate (inData) {
         if (!inData?.address || !inData.address.city || !inData.address.street || !inData.address.house)
             throw new Error(this.formatErrorMessage);
     }

@@ -13,7 +13,7 @@ class RemoveGenre extends BaseRemover {
         return 'Наборы жанров с данными id не были найдены';
     }
 
-    async validate(inData) {
+    async validate (inData) {
         if (!inData?.genre)
             throw new Error(this.formatErrorMessage);
         if (!inData.genre.id || (Array.isArray(inData.genre.id) && inData.genre.id.length === 0))

@@ -1,15 +1,64 @@
-module.exports = (app, model) => {
-    return async (req, res) => {
+class GetUserInfo {
+    constructor(app) {
+        this.app = app;
+        this.model = app?.model;
+        this.sequelize = app?.connection?.sequelize;
+        this.execute = this.execute.bind(this);
+    }
+
+    static get url () {
+        return '/proxy/get-user-info.json';
+    }
+
+    get userNotFoundErrorMessage() {
+        return 'Пользователь не найден';
+    }
+
+    get accessErrorMessage() {
+        return 'Ошибка доступа';
+    }
+
+    async executeGetUserInfo (inData) {
+        const user = await this.model.User.findByPk(inData.userId);
+
+        if (!user)
+            throw new Error(this.userNotFoundErrorMessage);
+
+        return user;
+    }
+
+    async execute (inData) {
+        const transactionFromParent = !!inData.transaction;
+        const transaction = transactionFromParent ? inData.transaction : await this.sequelize.transaction();
+        inData.transaction = transaction;
+        let status;
+        let response;
         try {
-            const user = await model.User.findByPk(req.user.userId);
+            const userId = inData.user?.userId;
+            if (!userId)
+                throw new Error(this.accessErrorMessage);
 
-            if (!user) {
-                return res.status(404).json({ error: 'User not found' });
+            const result = await this.executeGetUserInfo(Object.assign({userId: userId}, { transaction: inData.transaction }));
+            if (result && result.result === false) {
+                if (!transactionFromParent)
+                    await transaction.rollback();
+                status = 401;
+            } else {
+                if (!transactionFromParent)
+                    await transaction.commit();
+                status = 200;
             }
-
-            res.json(user);
+            response = { result: result };
         } catch (error) {
-            res.status(401).json({ error: 'Invalid token' });
+            console.log(error);
+            if (!transactionFromParent)
+                await transaction.rollback();
+            status = 400;
+            response = { error: error.message };
         }
-    };
-};
+        inData.res.status(status).json(response);
+    }
+
+}
+
+module.exports = GetUserInfo;

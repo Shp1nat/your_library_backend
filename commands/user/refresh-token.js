@@ -15,7 +15,7 @@ module.exports = (app, model) => {
                 return res.status(404).json({ error: 'User not found' });
             }
 
-            const accessToken = jwt.sign({ userId: user.id }, 'your-access-secret-key', { expiresIn: '15m' });
+            const accessToken = jwt.sign({ userId: user.id, status: user.status }, 'your-access-secret-key', { expiresIn: '15m' });
 
             res.json({ accessToken });
         } catch (error) {

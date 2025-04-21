@@ -13,7 +13,7 @@ class SetBook extends BaseSetter {
         return 'Книга с данным названием в данном году с данными жанрами, авторами и типами уже существует';
     }
 
-    async validate(inData) {
+    async validate (inData) {
         if (!inData?.book || !inData.book.name || !inData.book.year || !inData.book.authors || !inData.book.genres || !inData.book.types)
             throw new Error(this.formatErrorMessage);
 

@@ -13,7 +13,7 @@ class RemoveStreet extends BaseRemover {
         return 'Наборы улиц с данными id не были найдены';
     }
 
-    async validate(inData) {
+    async validate (inData) {
         if (!inData?.street)
             throw new Error(this.formatErrorMessage);
         if (!inData.street.id || (Array.isArray(inData.street.id) && inData.street.id.length === 0))
