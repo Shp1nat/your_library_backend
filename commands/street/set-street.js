@@ -9,7 +9,7 @@ class SetStreet extends BaseSetter {
         return 'Улица с данным названием уже существует в выбранном городе';
     }
 
-    async validate(inData) {
+    async validate (inData) {
         if (!inData?.street || !inData.street.name || !inData.street.city)
             throw new Error(this.formatErrorMessage);
 

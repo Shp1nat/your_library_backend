@@ -13,7 +13,7 @@ class RemoveBook extends BaseRemover {
         return 'Наборы книг с данными id не были найдены';
     }
 
-    async validate(inData) {
+    async validate (inData) {
         if (!inData?.book)
             throw new Error(this.formatErrorMessage);
         if (!inData.book.id || (Array.isArray(inData.book.id) && inData.book.id.length === 0))

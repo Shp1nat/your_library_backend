@@ -8,6 +8,7 @@ const path  = require('path');
 const {commandsPath, builtInAddressPath} = require('./depends.js');
 const addressImporter = require(path.join(builtInAddressPath, 'addressImporter.js'));
 const authMiddleware = require('./authMiddleware');
+const authRoles = require('./authRoles');
 
 class Application {
     constructor () {
@@ -77,15 +78,26 @@ class Application {
 
     initUserRoutes () {
         //todo simplify
-        const getUserInfo = require('./commands/user/get-user-info')(this.express, this.model);
         const refreshTokenRoute = require('./commands/user/refresh-token')(this.express, this.model);
         this.express.post('/users/refresh-token', refreshTokenRoute);
-        this.express.get('/users/me', authMiddleware, getUserInfo);
 
-        const handlers = ['sign-up-user', 'sign-in-user'];
-        for (const handler of handlers) {
+        const noAuthHandlers = ['sign-up-user', 'sign-in-user'];
+        for (const handler of noAuthHandlers) {
             const ref = require(`./commands/user/${handler}`);
             this.express.post(ref.url, (new ref(this)).execute);
+        }
+
+        const authHandlers = ['set-user', 'get-user-info'];
+        const adminHandlers = ['get-user-ids-out', 'get-user-ids'];
+        const accessHandlersMap = new Map()
+            .set(['user', 'admin'], authHandlers)
+            .set(['admin'], adminHandlers)
+
+        for (const [access, handlers] of accessHandlersMap) {
+            for (const handler of handlers) {
+                const ref = require(`./commands/user/${handler}`);
+                this.express.post(ref.url, authMiddleware, authRoles(...access), (new ref(this)).execute);
+            }
         }
     }
 
@@ -93,10 +105,17 @@ class Application {
         //todo simplify
         const commands = ['address', 'author', 'book', 'city', 'example', 'genre', 'publisher', 'street', 'type'];
         for (const command of commands) {
-            const handlers = [`set-${command}`, `get-${command}-ids`, `get-${command}-ids-out`, `remove-${command}`];
-            for (const handler of handlers) {
-                const ref = require(`./commands/${command}/${handler}`);
-                this.express.post(ref.url, (new ref(this)).execute);
+            const authHandlers = [`get-${command}-ids`, `get-${command}-ids-out`];
+            const adminHandlers = [`set-${command}`, `remove-${command}`];
+            const accessHandlersMap = new Map()
+                .set(['user', 'admin'], authHandlers)
+                .set(['admin'], adminHandlers)
+
+            for (const [access, handlers] of accessHandlersMap) {
+                for (const handler of handlers) {
+                    const ref = require(`./commands/${command}/${handler}`);
+                    this.express.post(ref.url, authMiddleware, authRoles(...access), (new ref(this)).execute);
+                }
             }
         }
     }

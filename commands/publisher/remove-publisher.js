@@ -13,7 +13,7 @@ class RemovePublisher extends BaseRemover {
         return 'Наборы издательств с данными id не были найдены';
     }
 
-    async validate(inData) {
+    async validate (inData) {
         if (!inData?.publisher)
             throw new Error(this.formatErrorMessage);
         if (!inData.publisher.id || (Array.isArray(inData.publisher.id) && inData.publisher.id.length === 0))

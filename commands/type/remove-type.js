@@ -13,7 +13,7 @@ class RemoveType extends BaseRemover {
         return 'Наборы типов с данными id не были найдены';
     }
 
-    async validate(inData) {
+    async validate (inData) {
         if (!inData?.type)
             throw new Error(this.formatErrorMessage);
         if (!inData.type.id || (Array.isArray(inData.type.id) && inData.type.id.length === 0))

@@ -13,7 +13,7 @@ class RemoveAuthor extends BaseRemover {
         return 'Наборы авторов с данными id не были найдены';
     }
 
-    async validate(inData) {
+    async validate (inData) {
         if (!inData?.author)
             throw new Error(this.formatErrorMessage);
         if (!inData.author.id || (Array.isArray(inData.author.id) && inData.author.id.length === 0))

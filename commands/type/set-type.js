@@ -9,7 +9,7 @@ class SetType extends BaseSetter {
         return 'Данный тип книги уже существует';
     }
 
-    async validate(inData) {
+    async validate (inData) {
         if (!inData?.type || !inData.type.name)
             throw new Error(this.formatErrorMessage);
 

@@ -13,7 +13,7 @@ class RemoveAddress extends BaseRemover {
         return 'Наборы адресов с данными id не были найдены';
     }
 
-    async validate(inData) {
+    async validate (inData) {
         if (!inData?.address)
             throw new Error(this.formatErrorMessage);
         if (!inData.address.id || (Array.isArray(inData.address.id) && inData.address.id.length === 0))

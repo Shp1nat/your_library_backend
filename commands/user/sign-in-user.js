@@ -12,7 +12,7 @@ class SignInUser {
 
     async getUser (login, transaction) {
         return await this.model.User.findOne({
-            attributes: ['id', 'login', 'password'],
+            attributes: ['id', 'login', 'password', 'status'],
             where: { login: login },
             transaction: transaction
         });
@@ -63,8 +63,8 @@ class SignInUser {
     async getResult (inData) {
         const user = await this.getUser(inData.user.login, inData.transaction);
 
-        const accessToken = jwt.sign({ userId: user.id }, 'your-access-secret-key', { expiresIn: '60m' }); // 60 минут
-        const refreshToken = jwt.sign({ userId: user.id, random: crypto.randomBytes(64).toString('hex') }, 'your-refresh-secret-key', { expiresIn: '7d' }); // 7 дней
+        const accessToken = jwt.sign({ userId: user.id, status: user.status }, 'your-access-secret-key', { expiresIn: '60m' }); // 60 минут
+        const refreshToken = jwt.sign({ userId: user.id, status: user.status, random: crypto.randomBytes(64).toString('hex') }, 'your-refresh-secret-key', { expiresIn: '7d' }); // 7 дней
 
         return Object.assign({id: user.id}, { accessToken, refreshToken });
     }

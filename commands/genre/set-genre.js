@@ -9,7 +9,7 @@ class SetGenre extends BaseSetter {
         return 'Данный жанр уже существует';
     }
 
-    async validate(inData) {
+    async validate (inData) {
         if (!inData?.genre || !inData.genre.name)
             throw new Error(this.formatErrorMessage);
 

@@ -9,7 +9,7 @@ class SetExample extends BaseSetter {
         return 'set' + modelName;
     }
 
-    async validate(inData) {
+    async validate (inData) {
         if (!inData?.example || !inData.example.availableCount || !inData.example.publisher || !inData.example.book)
             throw new Error(this.formatErrorMessage);
     }
