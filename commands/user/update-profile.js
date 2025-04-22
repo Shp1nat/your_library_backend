@@ -55,13 +55,14 @@ class UpdateProfile {
     async updateProfileInfo (inData) {
         let user;
         const defaults = {
-            login: inData.user.login,
-            name: inData.user.name,
-            lastname: inData.user.lastname,
-            patronymic: inData.user.patronymic,
-            age: inData.user.age,
-            picture: inData.user.picture
+            login: inData.user.login || null,
+            name: inData.user.name || null,
+            lastname: inData.user.lastname || null,
+            patronymic: inData.user.patronymic || null,
+            age: inData.user.age || null
         };
+        if (JSON.parse(inData.avatarChanged))
+            defaults.picture = inData.user.picture || null;
 
         user = await this.getUser(inData.user.id, inData.transaction);
         if (!user)
@@ -95,8 +96,16 @@ class UpdateProfile {
             inData.body.user = JSON.parse(inData.body.user);
             inData.body.user.id = userId;
 
-            if (inData.file)
+            if (inData.file) {
                 inData.body.user.picture = inData.file.buffer;
+                if (!inData.file.originalname || inData.file.originalname.length < 5) {
+                    throw new Error('Неверный формат названия файла');
+                }
+                const allowedTypes = ['.png', '.jpg', '.gif'];
+                const fileType = inData.file.originalname.slice(-4);
+                if (!allowedTypes.includes(fileType))
+                    throw new Error('Для загрузки доступны лишь файлы с расширениями .jpg, .png, .gif');
+            }
 
             const result = await this.executeUpdateProfile(Object.assign(inData.body, { transaction: inData.transaction }));
             if (result && result.result === false) {
