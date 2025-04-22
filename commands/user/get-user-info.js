@@ -24,6 +24,8 @@ class GetUserInfo {
         if (!user)
             throw new Error(this.userNotFoundErrorMessage);
 
+            user.picture = user.picture?.toString('base64');
+
         return user;
     }
 

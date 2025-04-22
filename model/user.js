@@ -8,7 +8,6 @@ module.exports.updateVector = async (inParams) => {
 
 module.exports.createModel = (inParams) => {
     const {connection} = inParams;
-    const {model} = inParams;
 
     const sequelize = connection.sequelize;
 
@@ -47,6 +46,10 @@ module.exports.createModel = (inParams) => {
             type: DataTypes.STRING,
             allowNull: false,
             defaultValue: 'user'
+        },
+        picture: {
+            type: DataTypes.BLOB('long'),
+            allowNull: true
         }
     }, {
         paranoid: true

@@ -9,7 +9,7 @@ class SetUser extends BaseSetter {
         return 'Пользователь с такими логином уже существует';
     }
 
-    get userExistErrorMessage() {
+    get userNotFoundErrorMessage() {
         return 'Данный пользователь не существует';
     }
 
@@ -20,7 +20,7 @@ class SetUser extends BaseSetter {
         let user = await this.getUser(inData.user.id);
 
         if (!user)
-            throw new Error(this.userExistErrorMessage);
+            throw new Error(this.userNotFoundErrorMessage);
 
         if (inData.user.login !== user.login) {
             const usersCount = await this.model.User.count({
@@ -45,12 +45,13 @@ class SetUser extends BaseSetter {
             login: inData.user.login,
             name: inData.user.name,
             lastname: inData.user.lastname,
+            patronymic: inData.user.patronymic,
             age: inData.user.age
         };
 
         user = await this.getUser(inData.user.id, inData.transaction);
         if (!user)
-            throw new Error(this.userExistErrorMessage);
+            throw new Error(this.userNotFoundErrorMessage);
 
         await user.update(defaults, { transaction: inData.transaction});
 

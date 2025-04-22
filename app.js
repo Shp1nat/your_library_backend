@@ -9,6 +9,9 @@ const {commandsPath, builtInAddressPath} = require('./depends.js');
 const addressImporter = require(path.join(builtInAddressPath, 'addressImporter.js'));
 const authMiddleware = require('./authMiddleware');
 const authRoles = require('./authRoles');
+const multer = require('multer');
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
 class Application {
     constructor () {
@@ -87,7 +90,7 @@ class Application {
             this.express.post(ref.url, (new ref(this)).execute);
         }
 
-        const authHandlers = ['set-user', 'get-user-info'];
+        const authHandlers = ['set-user', 'get-user-info', 'update-profile'];
         const adminHandlers = ['get-user-ids-out', 'get-user-ids'];
         const accessHandlersMap = new Map()
             .set(['user', 'admin'], authHandlers)
@@ -96,7 +99,10 @@ class Application {
         for (const [access, handlers] of accessHandlersMap) {
             for (const handler of handlers) {
                 const ref = require(`./commands/user/${handler}`);
-                this.express.post(ref.url, authMiddleware, authRoles(...access), (new ref(this)).execute);
+                if (handler !== 'update-profile')
+                    this.express.post(ref.url, authMiddleware, authRoles(...access), (new ref(this)).execute);
+                else
+                    this.express.post(ref.url, authMiddleware, authRoles(...access), upload.single('avatar'), (new ref(this)).execute);
             }
         }
     }
