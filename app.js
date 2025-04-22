@@ -87,7 +87,7 @@ class Application {
             this.express.post(ref.url, (new ref(this)).execute);
         }
 
-        const authHandlers = ['set-user', 'get-user-info'];
+        const authHandlers = ['set-user', 'get-user-info', 'update-profile'];
         const adminHandlers = ['get-user-ids-out', 'get-user-ids'];
         const accessHandlersMap = new Map()
             .set(['user', 'admin'], authHandlers)

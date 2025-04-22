@@ -8,7 +8,6 @@ module.exports.updateVector = async (inParams) => {
 
 module.exports.createModel = (inParams) => {
     const {connection} = inParams;
-    const {model} = inParams;
 
     const sequelize = connection.sequelize;
 
