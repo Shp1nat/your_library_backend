@@ -45,6 +45,7 @@ class SetUser extends BaseSetter {
             login: inData.user.login,
             name: inData.user.name,
             lastname: inData.user.lastname,
+            patronymic: inData.user.patronymic,
             age: inData.user.age
         };
 
