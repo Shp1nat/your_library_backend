@@ -46,6 +46,10 @@ module.exports.createModel = (inParams) => {
             type: DataTypes.STRING,
             allowNull: false,
             defaultValue: 'user'
+        },
+        picture: {
+            type: DataTypes.BLOB('long'),
+            allowNull: true
         }
     }, {
         paranoid: true

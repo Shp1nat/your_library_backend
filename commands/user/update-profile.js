@@ -59,7 +59,8 @@ class UpdateProfile {
             name: inData.user.name,
             lastname: inData.user.lastname,
             patronymic: inData.user.patronymic,
-            age: inData.user.age
+            age: inData.user.age,
+            picture: inData.user.picture
         };
 
         user = await this.getUser(inData.user.id, inData.transaction);
@@ -91,7 +92,11 @@ class UpdateProfile {
             const userId = inData.user?.userId;
             if (!userId)
                 throw new Error(this.accessErrorMessage);
+            inData.body.user = JSON.parse(inData.body.user);
             inData.body.user.id = userId;
+
+            if (inData.file)
+                inData.body.user.picture = inData.file.buffer;
 
             const result = await this.executeUpdateProfile(Object.assign(inData.body, { transaction: inData.transaction }));
             if (result && result.result === false) {
