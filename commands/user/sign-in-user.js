@@ -66,7 +66,7 @@ class SignInUser {
         const accessToken = jwt.sign({ userId: user.id, status: user.status }, 'your-access-secret-key', { expiresIn: '60m' }); // 60 минут
         const refreshToken = jwt.sign({ userId: user.id, status: user.status, random: crypto.randomBytes(64).toString('hex') }, 'your-refresh-secret-key', { expiresIn: '7d' }); // 7 дней
 
-        return Object.assign({id: user.id}, { accessToken, refreshToken });
+        return Object.assign({status: user.status}, { accessToken, refreshToken });
     }
 
     async signIn (inData) {
