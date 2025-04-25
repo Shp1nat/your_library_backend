@@ -5,6 +5,10 @@ class SetGenre extends BaseSetter {
         return '/proxy/set-genre.json';
     }
 
+    get formatErrorMessage() {
+        return 'Название жанра не должно быть пустым';
+    }
+
     get duplicateErrorMessage() {
         return 'Данный жанр уже существует';
     }

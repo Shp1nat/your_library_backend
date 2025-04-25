@@ -5,6 +5,10 @@ class SetAuthor extends BaseSetter {
         return '/proxy/set-author.json';
     }
 
+    get formatErrorMessage() {
+        return 'Имя и фамилия автора не должны быть пустыми';
+    }
+
     get duplicateErrorMessage() {
         return 'Автор с такими именем и фамилией уже существует';
     }

@@ -5,6 +5,10 @@ class SetType extends BaseSetter {
         return '/proxy/set-type.json';
     }
 
+    get formatErrorMessage() {
+        return 'Название типа не должно быть пустыми';
+    }
+
     get duplicateErrorMessage() {
         return 'Данный тип книги уже существует';
     }
