@@ -3,7 +3,7 @@ const BaseGetIds = require('../baseGetterIds');
 class GetAuthorIds extends BaseGetIds {
     constructor (app) {
         super(app);
-        this.condVars = ['name', 'description', 'updatedAt'];
+        this.condVars = ['name', 'lastname', 'patronymic', 'description', 'updatedAt'];
         this.searchColumns = ['name', 'description'];
         this.orderColumns = ['id', 'name', 'description', 'updatedAt'];
         this.columns = ['id'];

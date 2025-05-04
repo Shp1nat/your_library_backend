@@ -20,20 +20,29 @@ class RemoveBook extends BaseRemover {
             throw new Error(this.idsErrorMessage);
     }
 
+    async removeAssociations (ids, transaction) {
+        const middleTableNames = ['Author', 'Genre', 'Type'];
+
+        for (const middleTableName of middleTableNames)
+            await this.model[`Book_${middleTableName}`].destroy({where: {BookId: ids}}, transaction);
+        await this.model.Example.destroy({ where: { bookId: ids}, transaction: transaction });
+        //todo handle orders
+    }
+
     async removeBook (inData) {
         const books = await this.model.Book.findAll({where: {id: inData.book.id}, transaction: inData.transaction});
         if (books.length < 1)
             throw new Error(this.findErrorMessage);
 
         const ids = books.map(a => a.id);
+        await this.removeAssociations(ids, inData.transaction);
         await this.model.Book.destroy({ where: { id: ids}, transaction: inData.transaction });
-        await this.model.Example.destroy({ where: { bookId: ids}, transaction: inData.transaction });
-        //todo handle orders
 
         return ids;
     }
 
     async executeRemover (inData) {
+        await this.validate(inData);
         const ids = await this.removeBook(inData);
         return { id: ids };
     }
