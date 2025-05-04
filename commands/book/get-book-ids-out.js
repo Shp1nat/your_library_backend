@@ -21,7 +21,7 @@ class GetBookIdsOut extends BaseGetIdsOut {
         return [
             {
                 model: this.model.Author,
-                attributes: ['id', 'name'],
+                attributes: ['id', 'name', 'lastname', 'patronymic'],
                 as: 'authors',
                 through: {attributes: []}
             },
