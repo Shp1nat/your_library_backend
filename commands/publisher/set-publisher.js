@@ -6,7 +6,7 @@ class SetPublisher extends BaseSetter {
     }
 
     get duplicateErrorMessage() {
-        return 'Издательство с данным названием с данным набором адресов уже существует';
+        return 'Издательство с данным названием уже существует';
     }
 
     async validate (inData) {
@@ -14,39 +14,19 @@ class SetPublisher extends BaseSetter {
             throw new Error(this.formatErrorMessage);
 
         let publisher = await this.getPublisher(inData.publisher.id || null);
-        if (
-            !publisher
-            || publisher.name !== inData.publisher.name
-            || !this.idsArraysEqual(publisher.addresses.map(address => address.id), inData.publisher.addresses.map(address => address.id))
-        ) {
-            const publishers = await this.model.Publisher.findAll({
+        if (!publisher || publisher.name !== inData.publisher.name) {
+            publisher = await this.model.Publisher.findOne({
                 where: {
                     name: inData.publisher.name
                 },
-                include: [
-                    {
-                        model: this.model.Address,
-                        as: 'addresses',
-                        attributes: ['id'],
-                        through: {attributes: []}
-                    }
-                ],
                 transaction: inData.transaction
             });
-
-            const propNames = ['addresses'];
-            for (const publisher of publishers) {
-                let sameProps = true;
-                for (const propName of propNames) {
-                    const newPropIds = inData.publisher[propName].map(prop => prop.id)
-                    const currenPropIds = publisher[propName].map(prop => prop.id);
-                    if (!this.idsArraysEqual(newPropIds, currenPropIds))
-                        sameProps = false;
-                }
-                if (sameProps)
-                    throw new Error(this.duplicateErrorMessage);
-            }
+            if (publisher)
+                throw new Error(this.duplicateErrorMessage);
         }
+
+        if (!inData?.publisher || !inData.publisher.name || !inData.publisher.addresses)
+            throw new Error(this.formatErrorMessage);
     }
 
     async getPublisher (publisherId, transaction) {
@@ -92,6 +72,9 @@ class SetPublisher extends BaseSetter {
     }
 
     async executeSetter (inData) {
+        // todo handle addresses implementation and remove 2 lines below
+        if (inData.publisher)
+            inData.publisher.addresses = [];
         await this.validate(inData);
         const publisher = await this.createOrUpdatePublisher(inData);
         return { id: publisher.id, updatedAt: publisher.updatedAt };
