@@ -5,13 +5,28 @@ class SetExample extends BaseSetter {
         return '/proxy/set-example.json';
     }
 
+    get duplicateErrorMessage() {
+        return 'Экземпляр с данной книгой в данном издании данного года выпуска уже существует';
+    }
+
     getSetterName (modelName) {
         return 'set' + modelName;
     }
 
     async validate (inData) {
-        if (!inData?.example || !inData.example.availableCount || !inData.example.publisher || !inData.example.book)
+        if (!inData?.example || !inData.example.availableCount || !inData.example.publisher?.id || !inData.example.book?.id)
             throw new Error(this.formatErrorMessage);
+        const example = await this.model.Example.findOne({
+            attributes: ['id', 'bookId', 'publisherId', 'year'],
+            where: {
+                bookId: inData.example.book.id,
+                publisherId: inData.example.publisher.id,
+                year: inData.example.year
+            },
+            transaction: inData.transaction
+        });
+        if (example && inData.example.id !== example.id)
+            throw new Error(this.duplicateErrorMessage);
     }
 
     async getExample (exampleId, transaction) {
