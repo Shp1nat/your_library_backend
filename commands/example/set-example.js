@@ -14,7 +14,7 @@ class SetExample extends BaseSetter {
     }
 
     async validate (inData) {
-        if (!inData?.example || !inData.example.availableCount || !inData.example.publisher?.id || !inData.example.book?.id)
+        if (!inData?.example || !Number.isInteger(inData.example.availableCount) || !inData.example.publisher?.id || !inData.example.book?.id)
             throw new Error(this.formatErrorMessage);
         const example = await this.model.Example.findOne({
             attributes: ['id', 'bookId', 'publisherId', 'year'],

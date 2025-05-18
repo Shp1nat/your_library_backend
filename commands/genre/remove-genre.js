@@ -33,6 +33,7 @@ class RemoveGenre extends BaseRemover {
     }
 
     async executeRemover (inData) {
+        await this.validate(inData);
         const ids = await this.removeGenre(inData);
         return { id: ids };
     }

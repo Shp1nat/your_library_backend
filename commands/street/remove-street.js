@@ -33,6 +33,7 @@ class RemoveStreet extends BaseRemover {
     }
 
     async executeRemover (inData) {
+        await this.validate(inData);
         const ids = await this.removeStreet(inData);
         return { id: ids };
     }

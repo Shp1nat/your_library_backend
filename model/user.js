@@ -50,6 +50,11 @@ module.exports.createModel = (inParams) => {
         picture: {
             type: DataTypes.BLOB('long'),
             allowNull: true
+        },
+        penaltyPoints: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            defaultValue: 0
         }
     }, {
         paranoid: true

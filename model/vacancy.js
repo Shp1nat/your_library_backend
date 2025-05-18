@@ -31,6 +31,6 @@ module.exports.createModel = (inParams) => {
 
 
     return {
-        User
+        Vacancy
     };
 };

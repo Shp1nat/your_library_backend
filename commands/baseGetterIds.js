@@ -249,7 +249,7 @@ class BaseGetIds {
         let status;
         let response;
         try {
-            const result = await this.executeGetterIds(inData.body);
+            const result = await this.executeGetterIds({...inData.body, userId: inData.user.userId});
             status = 200;
             response = { result: result };
         } catch (error) {

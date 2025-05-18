@@ -44,6 +44,7 @@ class RemovePublisher extends BaseRemover {
     }
 
     async executeRemover (inData) {
+        await this.validate(inData);
         const ids = await this.removePublisher(inData);
         return { id: ids };
     }
