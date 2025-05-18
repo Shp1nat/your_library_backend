@@ -34,6 +34,7 @@ class RemoveCity extends BaseRemover {
     }
 
     async executeRemover (inData) {
+        await this.validate(inData);
         const ids = await this.removeCity(inData);
         return { id: ids };
     }

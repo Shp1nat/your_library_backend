@@ -33,6 +33,7 @@ class RemoveExample extends BaseRemover {
     }
 
     async executeRemover (inData) {
+        await this.validate(inData);
         const ids = await this.removeExample(inData);
         return { id: ids };
     }

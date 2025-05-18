@@ -12,6 +12,8 @@ const authRoles = require('./authRoles');
 const multer = require('multer');
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
+const cron = require('node-cron');
+const checkOverdueOrders = require('./cron/checkOverdueOrders');
 
 class Application {
     constructor () {
@@ -27,6 +29,7 @@ class Application {
         inParams.app = this;
         let tasks = [
             this.initModel.bind(this),
+            this.initCronJobs.bind(this),
             this.initRoutes.bind(this),
             this.initBuiltInAddresses.bind(this)
         ];
@@ -72,9 +75,26 @@ class Application {
         });
     }
 
+    initCronJobs(inParams, onDone) {
+        try {
+            cron.schedule('0 0 * * *', () => {
+                checkOverdueOrders(this).then();
+            }, {
+                timezone: 'Europe/Moscow'
+            });
+
+            console.log('Cron jobs scheduled');
+            return onDone();
+        } catch (err) {
+            console.error('Error scheduling cron job:', err);
+            return onDone(err);
+        }
+    }
+
     initRoutes (inParams, onDone) {
         this.initUserRoutes();
         this.initSimpleRoutes();
+        this.initOrderRoutes();
 
         return onDone();
     }
@@ -122,6 +142,22 @@ class Application {
                     const ref = require(`./commands/${command}/${handler}`);
                     this.express.post(ref.url, authMiddleware, authRoles(...access), (new ref(this)).execute);
                 }
+            }
+        }
+    }
+
+    initOrderRoutes () {
+        //todo simplify
+        const authHandlers = [`get-user-order-ids`, `get-user-order-ids-out`, 'make-order'];
+        const adminHandlers = [`get-order-ids`, `get-order-ids-out`, `remove-order`, 'close-order', 'approve-order-rent', 'reject-order-rent'];
+        const accessHandlersMap = new Map()
+            .set(['user', 'admin'], authHandlers)
+            .set(['admin'], adminHandlers)
+
+        for (const [access, handlers] of accessHandlersMap) {
+            for (const handler of handlers) {
+                const ref = require(`./commands/order/${handler}`);
+                this.express.post(ref.url, authMiddleware, authRoles(...access), (new ref(this)).execute);
             }
         }
     }

@@ -33,6 +33,7 @@ class RemoveType extends BaseRemover {
     }
 
     async executeRemover (inData) {
+        await this.validate(inData);
         const ids = await this.removeType(inData);
         return { id: ids };
     }

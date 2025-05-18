@@ -34,6 +34,7 @@ class RemoveAddress extends BaseRemover {
     }
 
     async executeRemover (inData) {
+        await this.validate(inData);
         const ids = await this.removeAddress(inData);
         return { id: ids };
     }
