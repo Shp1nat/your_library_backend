@@ -95,6 +95,7 @@ class Application {
         this.initUserRoutes();
         this.initSimpleRoutes();
         this.initOrderRoutes();
+        this.initVacancyRoutes();
 
         return onDone();
     }
@@ -157,6 +158,22 @@ class Application {
         for (const [access, handlers] of accessHandlersMap) {
             for (const handler of handlers) {
                 const ref = require(`./commands/order/${handler}`);
+                this.express.post(ref.url, authMiddleware, authRoles(...access), (new ref(this)).execute);
+            }
+        }
+    }
+
+    initVacancyRoutes () {
+        //todo simplify
+        const authHandlers = [`get-user-vacancy-ids`, `get-user-vacancy-ids-out`, 'make-vacancy'];
+        const adminHandlers = [`get-vacancy-ids`, `get-vacancy-ids-out`, `remove-vacancy`, 'accept-vacancy', 'reject-vacancy'];
+        const accessHandlersMap = new Map()
+            .set(['user', 'admin'], authHandlers)
+            .set(['admin'], adminHandlers)
+
+        for (const [access, handlers] of accessHandlersMap) {
+            for (const handler of handlers) {
+                const ref = require(`./commands/vacancy/${handler}`);
                 this.express.post(ref.url, authMiddleware, authRoles(...access), (new ref(this)).execute);
             }
         }
