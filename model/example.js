@@ -31,6 +31,10 @@ module.exports.createModel = (inParams) => {
             type: DataTypes.BOOLEAN,
             allowNull: false,
             defaultValue: false
+        },
+        picture: {
+            type: DataTypes.BLOB('long'),
+            allowNull: true
         }
     }, {
         paranoid: true
