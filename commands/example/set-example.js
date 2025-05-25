@@ -55,6 +55,8 @@ class SetExample extends BaseSetter {
             availableCount: inData.example.availableCount,
             digitalVersion: inData.example.book.digitalVersion
         };
+        if (JSON.parse(inData.avatarChanged))
+            defaults.picture = inData.example.picture || null;
 
         if (inData.example.id || inData.example.id === 0) {
             example = await this.getExample(inData.example.id, inData.transaction);

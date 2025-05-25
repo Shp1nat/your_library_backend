@@ -61,6 +61,21 @@ class BaseSetter {
         let status;
         let response;
         try {
+            const keys = Object.keys(inData.body);
+            const prop = keys[0];
+            if (typeof inData.body[prop] === 'string')
+                inData.body[prop] = JSON.parse(inData.body[prop]);
+            if (inData.file) {
+                inData.body[prop].picture = inData.file.buffer;
+                if (!inData.file.originalname || inData.file.originalname.length < 5) {
+                    throw new Error('Неверный формат названия файла');
+                }
+                const allowedTypes = ['.png', '.jpg', '.gif'];
+                const fileType = inData.file.originalname.slice(-4);
+                if (!allowedTypes.includes(fileType))
+                    throw new Error('Для загрузки доступны лишь файлы с расширениями .jpg, .png, .gif');
+            }
+
             const result = await this.executeSetter(Object.assign(inData.body, { transaction: inData.transaction }));
             if (result && result.result === false) {
                 if (!transactionFromParent)

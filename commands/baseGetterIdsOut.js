@@ -83,6 +83,18 @@ class BaseGetIdsOut {
         let response;
         try {
             const result = await this.executeGetterIdsOut(inData.body);
+            if (result.rows) {
+                for (const row of result.rows) {
+                    if (row.picture)
+                        row.picture = row.picture?.toString('base64') || null;
+                }
+            } else {
+                if (!result.error) {
+                    const keys = Object.keys(result);
+                    const prop = keys[0];
+                    result[prop].picture = result[prop].picture?.toString('base64') || null;
+                }
+            }
             status = 200;
             response = { result: result };
         } catch (error) {

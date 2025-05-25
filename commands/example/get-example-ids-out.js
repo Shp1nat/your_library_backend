@@ -10,7 +10,7 @@ class GetExampleIdsOut extends BaseGetIdsOut {
     }
 
     get fields () {
-        return ['id', 'name', 'description', 'year', 'availableCount', 'digitalVersion', 'updatedAt'];
+        return ['id', 'name', 'description', 'year', 'availableCount', 'digitalVersion', 'updatedAt', 'picture'];
     }
 
     get oneItemFields () {
