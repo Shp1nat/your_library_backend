@@ -22,6 +22,26 @@ class GetExampleIdsOut extends BaseGetIdsOut {
             {
                 model: this.model.Book,
                 attributes: ['id', 'name'],
+                include: [
+                    {
+                        model: this.model.Author,
+                        as: 'authors',
+                        attributes: ['id', 'name'],
+                        through: { attributes: [] }
+                    },
+                    {
+                        model: this.model.Genre,
+                        as: 'genres',
+                        attributes: ['id', 'name'],
+                        through: { attributes: [] }
+                    },
+                    {
+                        model: this.model.Type,
+                        as: 'types',
+                        attributes: ['id', 'name'],
+                        through: { attributes: [] }
+                    }
+                ],
                 as: 'book'
             },
             {
