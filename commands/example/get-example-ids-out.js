@@ -26,7 +26,7 @@ class GetExampleIdsOut extends BaseGetIdsOut {
                     {
                         model: this.model.Author,
                         as: 'authors',
-                        attributes: ['id', 'name'],
+                        attributes: ['id', 'name', 'lastname', 'patronymic'],
                         through: { attributes: [] }
                     },
                     {
