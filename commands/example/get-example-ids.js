@@ -30,23 +30,65 @@ class GetExampleIds extends BaseGetIds {
         return new Set(publishers.flatMap(p => p.examples.map(e => e.id)));
     }
 
+    getOrderedBookIds (orders) {
+        const orderedBookIds = new Set();
+        for (const order of orders) {
+            if (order.examples && Array.isArray(order.examples)) {
+                for (const example of order.examples) {
+                    if (example.bookId) {
+                        orderedBookIds.add(example.bookId);
+                    }
+                }
+            }
+        }
+        return orderedBookIds;
+    }
+
+    getCountsPerPopularId (popularObjIds) {
+        let countsPerPopularId;
+        if (popularObjIds.length === 1) {
+            countsPerPopularId = [10];
+        } else if (popularObjIds.length === 2) {
+            countsPerPopularId = [5, 5];
+        } else { // 3 или более (но мы взяли топ-3)
+            countsPerPopularId = [4, 3, 3];
+        }
+        return countsPerPopularId;
+    }
+
+    getTargetModel (cond) {
+        if (cond === 'authors')
+            return this.model.Author;
+        else if (cond === 'genres')
+            return this.model.Genre;
+        else if (cond === 'types')
+            return this.model.Type;
+        else
+            return null;
+    }
+
     getPopularObjs (orders, cond) {
         const frequencyMap = new Map();
         for (const order of orders) {
             if (order.examples && Array.isArray(order.examples)) {
                 for (const example of order.examples) {
-                    const itemsToCount = example[cond];
-                    if (Array.isArray(itemsToCount)) {
-                        for (const item of itemsToCount) {
-                            if (item?.id)
-                                frequencyMap.set(item.id, (frequencyMap.get(item.id) || 0) + 1);
+                    if (example.book && example.book[cond]) {
+                        const itemsToCount = example.book[cond];
+                        if (Array.isArray(itemsToCount)) {
+                            for (const item of itemsToCount) {
+                                if (item?.id) { // Убедимся, что item и item.id существуют
+                                    frequencyMap.set(item.id, (frequencyMap.get(item.id) || 0) + 1);
+                                }
+                            }
                         }
                     }
                 }
             }
         }
-        const sortedIds = Array.from(frequencyMap.entries()).sort((a, b) => b[1] - a[1]).map(entry => entry[0]);
-        return sortedIds.slice(0, 3);
+        const sortedIds = Array.from(frequencyMap.entries())
+            .sort((a, b) => b[1] - a[1]) // Сортировка по убыванию частоты
+            .map(entry => entry[0]);     // Получаем только ID
+        return sortedIds.slice(0, 3);    // Берем топ-3
     }
 
     async getExampleIdsSetByRecsCond (cond, userId) {
@@ -56,34 +98,100 @@ class GetExampleIds extends BaseGetIds {
             include: {
                 model: this.model.Example,
                 as: 'examples',
-                attributes: ['id'],
-                separate: true,
-                include: [
-                    {
-                        model: this.model.Author,
-                        as: 'authors',
-                        attributes: ['id'],
-                        through: {attributes: []}
-                    },
-                    {
-                        model: this.model.Genre,
-                        as: 'genres',
-                        attributes: ['id'],
-                        through: {attributes: []}
-                    },
-                    {
-                        model: this.model.Type,
-                        as: 'types',
-                        attributes: ['id'],
-                        through: {attributes: []}
-                    }
-                ],
-                through: {attributes: []}
+                attributes: ['id', 'bookId'],
+                include:  {
+                    model: this.model.Book,
+                    as: 'book',
+                    attributes: ['id'],
+                    include: [
+                        {
+                            model: this.model.Author,
+                            as: 'authors',
+                            attributes: ['id'],
+                            through: { attributes: [] }
+                        },
+                        {
+                            model: this.model.Genre,
+                            as: 'genres',
+                            attributes: ['id'],
+                            through: { attributes: [] }
+                        },
+                        {
+                            model: this.model.Type,
+                            as: 'types',
+                            attributes: ['id'],
+                            through: { attributes: [] }
+                        }
+                    ]
+                },
+                through: { attributes: [] }
             }
         });
-        const popularObjs = this.getPopularObjs(orders, cond); //top3 ids
 
-        //todo logic
+        const orderedBookIds = this.getOrderedBookIds(orders);
+        const popularObjIds = this.getPopularObjs(orders, cond);
+
+        if (popularObjIds.length === 0)
+            return [];
+
+        const countsPerPopularId = this.getCountsPerPopularId(popularObjIds);
+
+        const recommendedExampleIds = new Set();
+
+        for (let i = 0; i < popularObjIds.length; i++) {
+            if (recommendedExampleIds.size >= 10) {
+                break;
+            }
+            const popularId = popularObjIds[i];
+            const limitForThisPopularId = countsPerPopularId[i];
+
+            const targetModel = this.getTargetModel(cond);
+            if (!targetModel)
+                continue;
+
+            try {
+                const examplesFound = await this.model.Example.findAll({
+                    attributes: ['id'],
+                    where: {
+                        id: { [Op.notIn]: Array.from(recommendedExampleIds) }
+                    },
+                    include: [
+                        {
+                            model: this.model.Book,
+                            as: 'book',
+                            attributes: ['id'],
+                            where: {
+                                id: { [Op.notIn]: Array.from(orderedBookIds) }
+                            },
+                            include: [
+                                {
+                                    model: targetModel,
+                                    as: cond,
+                                    attributes: [],
+                                    where: { id: popularId },
+                                    through: { attributes: [] },
+                                    required: true
+                                }
+                            ],
+                            required: true
+                        }
+                    ],
+                    limit: limitForThisPopularId,
+                    order: [this.sequelize.literal('RANDOM()')]
+                });
+
+                for (const example of examplesFound) {
+                    if (recommendedExampleIds.size < 10) {
+                        recommendedExampleIds.add(example.id);
+                    } else {
+                        break;
+                    }
+                }
+            } catch (error) {
+                console.error(`Error fetching recommendations for ${cond} ID ${popularId}:`, error);
+            }
+        }
+        return recommendedExampleIds;
     }
 
     getPublisherCond (conditions) {
