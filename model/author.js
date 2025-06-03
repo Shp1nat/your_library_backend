@@ -22,6 +22,10 @@ module.exports.createModel = (inParams) => {
         },
         description: {
             type: DataTypes.TEXT,
+        },
+        picture: {
+            type: DataTypes.BLOB('long'),
+            allowNull: true
         }
     }, {
         paranoid: true
