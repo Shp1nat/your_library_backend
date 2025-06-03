@@ -120,11 +120,10 @@ class Application {
         for (const [access, handlers] of accessHandlersMap) {
             for (const handler of handlers) {
                 const ref = require(`./commands/user/${handler}`);
-                if (handler !== 'update-profile') {
+                if (handler !== 'update-profile')
                     this.express.post(ref.url, authMiddleware, authRoles(...access), (new ref(this)).execute);
-                } else {
+                else
                     this.express.post(ref.url, authMiddleware, authRoles(...access), upload.single('avatar'), (new ref(this)).execute);
-                }
             }
         }
     }
@@ -142,11 +141,10 @@ class Application {
             for (const [access, handlers] of accessHandlersMap) {
                 for (const handler of handlers) {
                     const ref = require(`./commands/${command}/${handler}`);
-                    if (handler !== 'set-example') {
-                        this.express.post(ref.url, authMiddleware, authRoles(...access), (new ref(this)).execute);
-                    } else {
+                    if (handler === 'set-example' || handler === 'set-author')
                         this.express.post(ref.url, authMiddleware, authRoles(...access), upload.single('avatar'), (new ref(this)).execute);
-                    }
+                    else
+                        this.express.post(ref.url, authMiddleware, authRoles(...access), (new ref(this)).execute);
                 }
             }
         }

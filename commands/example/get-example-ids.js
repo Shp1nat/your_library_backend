@@ -132,7 +132,7 @@ class GetExampleIds extends BaseGetIds {
         const popularObjIds = this.getPopularObjs(orders, cond);
 
         if (popularObjIds.length === 0)
-            return [];
+            return new Set([]);
 
         const countsPerPopularId = this.getCountsPerPopularId(popularObjIds);
 

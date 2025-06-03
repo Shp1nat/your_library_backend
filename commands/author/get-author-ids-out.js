@@ -10,7 +10,7 @@ class GetAuthorIdsOut extends BaseGetIdsOut {
     }
 
     get fields () {
-        return ['id', 'name', 'lastname', 'patronymic', 'description', 'updatedAt'];
+        return ['id', 'name', 'lastname', 'patronymic', 'description', 'updatedAt', 'picture'];
     }
 
     get oneItemFields () {

@@ -47,6 +47,9 @@ class SetAuthor extends BaseSetter {
             description: inData.author.description
         };
 
+        if (JSON.parse(inData.avatarChanged))
+            defaults.picture = inData.author.picture || null;
+
         if (inData.author.id || inData.author.id === 0) {
             author = await this.getAuthor(inData.author.id, inData.transaction);
             if (author)
