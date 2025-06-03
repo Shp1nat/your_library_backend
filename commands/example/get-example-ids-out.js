@@ -55,6 +55,35 @@ class GetExampleIdsOut extends BaseGetIdsOut {
     get ObjModel () {
         return this.model.Example;
     }
+
+    async execute (inData) {
+        let status;
+        let response;
+        try {
+            const result = await this.executeGetterIdsOut(inData.body);
+            if (result.rows) {
+                for (const row of result.rows) {
+                    if (row.picture)
+                        row.picture = row.picture?.toString('base64') || null;
+                }
+            } else {
+                if (!result.error) {
+                    const keys = Object.keys(result);
+                    const prop = keys[0];
+                    result[prop].picture = result[prop].picture?.toString('base64') || null;
+                    for (const author of result[prop].book.authors)
+                        author.picture = author.picture?.toString('base64') || null;
+                }
+            }
+            status = 200;
+            response = { result: result };
+        } catch (error) {
+            console.log(error);
+            status = 400;
+            response = { error: error.message };
+        }
+        inData.res.status(status).json(response);
+    }
 }
 
 module.exports = GetExampleIdsOut;
